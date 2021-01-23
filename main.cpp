@@ -2,7 +2,8 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
-#include "Tokenizer.h"
+#include "Project 1/Lexer.h"
+#include "Project 1/Token.h"
 
 int main (int argc, char* argv[]) {
     
@@ -21,6 +22,9 @@ int main (int argc, char* argv[]) {
     inputString.assign( (std::istreambuf_iterator<char>(ifs) ),
                        (std::istreambuf_iterator<char>()    ) );
 
+
+    Lexer *trial = new Lexer;
+    trial->Run(inputString);
 
     return 0;
 }
