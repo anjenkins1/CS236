@@ -14,7 +14,7 @@ class Token {
             lineNum = lNum;
             type = t;
         };
-        ~Token();
+        ~Token() = default;
 
         std::string toString();
 

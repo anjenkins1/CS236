@@ -1,4 +1,4 @@
-#include "Project 1/Token.h"
+#include "Token.h"
 
     std::string Token::tokenToString(TokenType type)
     {
@@ -19,7 +19,7 @@
             case STRING: return "STRING"; break;
             case COMMENT: return "COMMENT"; break;
             case UNDEFINED: return "UNDEFINED"; break;
-            case END_OF_FILE: return "END_OF_FILE"; break;
+            case END_OF_FILE: return "EOF"; break;
             case ID: return "ID"; break;
         };
         return "ERROR";
