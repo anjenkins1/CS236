@@ -3,6 +3,7 @@
 #include <sstream>
 #include <stdexcept>
 #include "Lexer.h"
+#include "Parser.h"
 
 int main (int argc, char* argv[]) {
     
@@ -23,7 +24,10 @@ int main (int argc, char* argv[]) {
 
     Lexer *trial = new Lexer;
     trial->Run(inputString);
-    std::cout << trial->toString();
+    
+    Parser parser(trial->getTokens());
+    
+    parser.parse();
 
     delete trial;
     

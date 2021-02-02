@@ -1,0 +1,12 @@
+Schemes:
+#TestComments
+#
+# 
+Dude(hello, hi, you, are, amazing)
+Hello(Im, youre, mom)
+Im(a, married, man)
+Dont(eat, my, sandwich)
+ 
+Facts: 
+Rules: 
+Queries:
