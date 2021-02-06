@@ -6,7 +6,7 @@
 class Predicate {
     private:
     std::string id;
-    std::vector<Parameter> parameters;
+    std::vector<Parameter*> parameters;
 
     public:
     Predicate() {};
@@ -14,8 +14,12 @@ class Predicate {
         this->id = id;
     }
 
-    void addParameter (Parameter parameter) {
+    void addParameter (Parameter* parameter) {
         parameters.push_back(parameter);
+    }
+
+    std::vector<Parameter*> getParameters() {
+        return parameters;
     }
 
     std::string const getId () {
@@ -25,12 +29,17 @@ class Predicate {
     std::string toString() {
         std::string toReturn;
 
-        toReturn += "( ";
-        for (int i = 0; i < (int) parameters.size() - 1; i++) {
-            toReturn += (parameters.at(i).toString() + ", ");
+        toReturn+=id;
+
+        if (!parameters.empty()) {
+            toReturn += "(";
+            for (int i = 0; i < (int) parameters.size()-1; i++) {
+            toReturn += (parameters.at(i)->toString() + ",");
+            }
+            toReturn += ((parameters.at(parameters.size()-1)->toString()) + ")");
         }
 
-        toReturn += ((parameters.at(parameters.size()-1).toString()) + " )");
+        
         return toReturn;
     }
 };

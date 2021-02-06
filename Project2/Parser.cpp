@@ -2,16 +2,12 @@
 
 void Parser::parse() {
 
+
     try {
-        if (tokens.at(tokenCount)->getTokenType() == SCHEMES) {
-            tokenCount++;
-            parseDatalogProgram();
-            isValid = true;
-            toString();
-        }
-        else {
-            throw tokens.at(tokenCount);
-        }
+        parseSCHEMES();
+        parseDatalogProgram();
+        isValid = true;
+        toString();
     }
     catch (Token* e) {
         if (tokens.empty()) {
@@ -20,78 +16,29 @@ void Parser::parse() {
         isValid = false;
         toString();
     }
-}
+};
 
 void Parser::parseDatalogProgram() {
     // scheme schemeList FACTS COLON factList RULES COLON ruleList QUERIES COLON query queryList EOF
 
-    if (tokens.at(tokenCount)->getTokenType() == COLON) {
-        tokenCount++;
+    parseCOLON();
+    parseScheme();
+    parseSchemeList();
+    parseFACTS();
+    parseCOLON();
+    parseFactList();
+    parseRULES();
+    parseCOLON();
+    parseRuleList();
+    parseQUERIES();
+    parseCOLON();
+    parseQuery();
+    parseQuerieList();
+    parseEND_OF_FILE();
+    return;
 
-        parseScheme();
-        parseSchemeList();
-
-        if (tokens.at(tokenCount)->getTokenType() == FACTS) {
-            tokenCount++;
-
-            if(tokens.at(tokenCount)->getTokenType() == COLON) {
-                tokenCount++;
-
-                parseFactList();
-                
-                if (tokens.at(tokenCount)->getTokenType() == RULES) {
-                    tokenCount++;
-
-                    if (tokens.at(tokenCount)->getTokenType() == COLON) {
-                        tokenCount++;
-
-                        parseRuleList();
-
-                        if (tokens.at(tokenCount)->getTokenType() == QUERIES) {
-                            tokenCount++;
-
-                                if (tokens.at(tokenCount)->getTokenType() == COLON) {
-                                    tokenCount++;
-
-                                    parseQuery();
-                                    parseQuerieList();
-
-                                    if (tokens.at(tokenCount)->getTokenType() == END_OF_FILE) {
-                                        return;
-                                    }
-
-                                    else {
-                                        throw tokens.at(tokenCount);
-                                    }
-                                }
-
-                                else {
-                                    throw tokens.at(tokenCount);
-                                }
-                            }
-
-                            else {
-                                throw tokens.at(tokenCount);
-                            }
-                        }
-                    }
-                    else {
-                        throw tokens.at(tokenCount);
-                    }
-                }
-                else {
-                    throw tokens.at(tokenCount);
-                }
-            }
-            else {
-                throw tokens.at(tokenCount);
-            }
-        
-        }
-        else {
-            throw tokens.at(tokenCount);
-        }
-}
+    
+};
 
 void Parser::parseRuleList() {
     if (tokens.at(tokenCount)->getTokenType() == ID) {
@@ -144,127 +91,144 @@ void Parser::parseFactList() {
 };
 
 void Parser::parseScheme() {
-    if (tokens.at(tokenCount)->getTokenType() == ID) {
-        tokenCount++;
 
-        if (tokens.at(tokenCount)->getTokenType() == LEFT_PAREN) {
-            tokenCount++;
+    parseID();
 
-            if (tokens.at(tokenCount)->getTokenType() == ID) {
-                tokenCount++;
-                parseIdList();
-                
-                if (tokens.at(tokenCount)->getTokenType() == RIGHT_PAREN) {
-                    tokenCount++;
-                    return;
-                }
-                else {
-            throw tokens.at(tokenCount);
-        }
-            }
-            else {
-            throw tokens.at(tokenCount);
-        }
+    tokenCount--;
+    Predicate* newScheme = new Predicate(tokens.at(tokenCount)->getTokenStr());
+    datalog.addScheme(newScheme);
+    tokenCount++;
 
-        }
-        else {
-            throw tokens.at(tokenCount);
-        }
-    }
-    else {
-            throw tokens.at(tokenCount);
-        }
+    parseLEFT_PAREN();
+    parseID();
+
+    tokenCount--;
+    PlainParameter* newParameter = new PlainParameter(tokens.at(tokenCount)->getTokenStr());
+    newScheme->addParameter(newParameter);
+    tokenCount++;
+
+    parseIdList(newScheme);
+
+/*
+    std::vector<PlainParameter *> parameterList = parseIdList();
+
+   if (!parameterList.empty()) {
+       for (int i = 0; i < (int)parameterList.size(); i++) {
+           newScheme->addParameter(parameterList.at(i));
+     }
+  }
+*/
+    parseRIGHT_PAREN();
+    return;
+   
 };
 
 void Parser::parseFact() {
-    if (tokens.at(tokenCount)->getTokenType() == ID) {
-        tokenCount++;
 
-        if (tokens.at(tokenCount)->getTokenType() == LEFT_PAREN) {
-            tokenCount++;
+    parseID();
 
-            if (tokens.at(tokenCount)->getTokenType() == STRING) {
-                tokenCount++;
-                parseStringList();
-                
-                if (tokens.at(tokenCount)->getTokenType() == RIGHT_PAREN) {
-                    tokenCount++;
-                }
-                    if (tokens.at(tokenCount)->getTokenType() == PERIOD) {
-                        tokenCount++;
-                        return;
-                    }
-                    else {
-            throw tokens.at(tokenCount);
-        }
-            }
-            else {
-            throw tokens.at(tokenCount);
-        }
+    tokenCount--;
+    Predicate* newFact = new Predicate(tokens.at(tokenCount)->getTokenStr());
+    datalog.addFact(newFact);
+    tokenCount++;
 
-        }
-        else {
-            throw tokens.at(tokenCount);
-        }
-    }
-    else {
-            throw tokens.at(tokenCount);
-        }
+    parseLEFT_PAREN();
+    parseSTRING();
+
+    tokenCount--;
+    PlainParameter* newParameter = new PlainParameter(tokens.at(tokenCount)->getTokenStr());
+    newFact->addParameter(newParameter);
+    tokenCount++;
+
+    parseStringList(newFact);
+    parseRIGHT_PAREN();
+    parsePERIOD();
+    return;
+
 };
 
 void Parser::parseRule() {
-    parseHeadPredicate();
-    if (tokens.at(tokenCount)->getTokenType() == COLON_DASH) {
-        tokenCount++;
-        parsePredicate();
-        parsePredicateList();
-        if (tokens.at(tokenCount)->getTokenType() == PERIOD) {
-            tokenCount++;
-            return;
-        }
-        else {
-            throw tokens.at(tokenCount);
-        }
-    }
-    else {
-        throw tokens.at(tokenCount);
-    }
+
+    Rule* newRule = new Rule();
+    parseHeadPredicate(newRule);
+    parseCOLON_DASH();
+    parsePredicate(newRule);
+    parsePredicateList(newRule);
+    parsePERIOD();
+    datalog.addRule(newRule);
+    return;
+
+
 };
 
 void Parser::parseQuery() {
+
     parsePredicate();
-    if (tokens.at(tokenCount)->getTokenType() == Q_MARK) {
-        tokenCount++;
-        return;
-    }
-    else {
-        throw tokens.at(tokenCount);
-    }
+    parseQ_MARK();
 };
 
-void Parser::parseHeadPredicate() {
-    if (tokens.at(tokenCount)->getTokenType() == ID) {
-        tokenCount++;
+void Parser::parseHeadPredicate(Rule* newRule) {
+    parseID();
 
-        if (tokens.at(tokenCount)->getTokenType() == LEFT_PAREN) {
-            tokenCount++;
+    tokenCount--;
+    Predicate* newHeadPred = new Predicate(tokens.at(tokenCount)->getTokenStr());
+    newRule->setHeadPredicate(newHeadPred);
+    tokenCount++;
 
-            if (tokens.at(tokenCount)->getTokenType() == ID) {
-                tokenCount++;
+    parseLEFT_PAREN();
+    parseID();
 
-                parseIdList();
+    tokenCount--;
+    PlainParameter* newParameter = new PlainParameter(tokens.at(tokenCount)->getTokenStr());
+    newHeadPred->addParameter(newParameter);
+    tokenCount++;
 
-                if (tokens.at(tokenCount)->getTokenType() == RIGHT_PAREN) {
-                    tokenCount++;
-                    return;
-                }
-            }
+    parseIdList(newHeadPred);
+    parseRIGHT_PAREN();
+    return;
 
-        }
-    }
 };
 
-void Parser::parsePredicate() {
+void Parser::parsePredicate(){
+
+    parseID();
+
+    tokenCount--;
+    Predicate* newPred = new Predicate(tokens.at(tokenCount)->getTokenStr());
+    tokenCount++;
+
+    parseLEFT_PAREN();
+
+    newPred->addParameter(parseParameter());
+
+    parseParameterList(newPred);
+
+    parseRIGHT_PAREN();
+
+    datalog.addQuery(newPred);
+};
+
+void Parser::parsePredicate(Rule* newRule) {
+
+    parseID();
+
+    tokenCount--;
+    Predicate* newPred = new Predicate(tokens.at(tokenCount)->getTokenStr());
+    tokenCount++;
+
+    parseLEFT_PAREN();
+    
+    newPred->addParameter(parseParameter());
+
+    parseParameterList(newPred);
+
+    parseRIGHT_PAREN();
+
+    newRule->addPredicate(newPred);
+
+    return;
+
+    /*
         if (tokens.at(tokenCount)->getTokenType() == ID) {
         tokenCount++;
 
@@ -281,12 +245,13 @@ void Parser::parsePredicate() {
 
         }
     }
+    */
 };
 
-void Parser::parsePredicateList() {
+void Parser::parsePredicateList(Rule* rule) {
     if (tokens.at(tokenCount)->getTokenType() == COMMA) {
         tokenCount++;
-        parsePredicate();
+        parsePredicate(rule);
     }
     else if (tokens.at(tokenCount)->getTokenType() == PERIOD) {
         return;
@@ -294,13 +259,13 @@ void Parser::parsePredicateList() {
     else {
         throw tokens.at(tokenCount);
     }
-    parsePredicateList();
+    parsePredicateList(rule);
 };
 
-void Parser::parseParameterList() {
+void Parser::parseParameterList(Predicate* pred) {
     if (tokens.at(tokenCount)->getTokenType() == COMMA) {
         tokenCount++;
-        parseParameter();
+        pred->addParameter(parseParameter());
     }
     else if (tokens.at(tokenCount)->getTokenType() == RIGHT_PAREN) {
         return;
@@ -308,16 +273,19 @@ void Parser::parseParameterList() {
     else {
         throw tokens.at(tokenCount);
     }
-    parseParameterList();
+    parseParameterList(pred);
 };
 
-void Parser::parseStringList() {
+void Parser::parseStringList(Predicate* newFact) {
     if (tokens.at(tokenCount)->getTokenType() == COMMA) {
         tokenCount++;
 
         if (tokens.at(tokenCount)->getTokenType() == STRING) {
+
+            PlainParameter* newParameter = new PlainParameter(tokens.at(tokenCount)->getTokenStr());
+            newFact->addParameter(newParameter);
             tokenCount++;
-            parseStringList();
+            parseStringList(newFact);
         }
     else if (tokens.at(tokenCount)->getTokenType() == RIGHT_PAREN) {
         return;
@@ -328,48 +296,89 @@ void Parser::parseStringList() {
     }
 }
 
-void Parser::parseIdList() {
-    //COMMA ID idList | lambda
+void Parser::parseIdList(Predicate* pred) {
+
     if (tokens.at(tokenCount)->getTokenType() == COMMA) {
         tokenCount++;
 
-        if (tokens.at(tokenCount)->getTokenType() == ID) {
+    if (tokens.at(tokenCount)->getTokenType() == ID) {
+
+            PlainParameter* newparam = new PlainParameter(tokens.at(tokenCount)->getTokenStr());
+            pred->addParameter(newparam);
+
             tokenCount++;
 
-            parseIdList();
+            parseIdList(pred);
         } 
         else {
             throw tokens.at(tokenCount);
         }
     } 
     return;
+}
+
+std::vector<PlainParameter *> Parser::parseIdList() {
+    //COMMA ID idList | lambda
+
+    std::vector<PlainParameter *> parameters;
+
+    if (tokens.at(tokenCount)->getTokenType() == COMMA) {
+        tokenCount++;
+
+        if (tokens.at(tokenCount)->getTokenType() == ID) {
+
+            PlainParameter* newparam = new PlainParameter(tokens.at(tokenCount)->getTokenStr());
+            parameters.push_back(newparam);
+
+            tokenCount++;
+
+            parameters = parseIdList();
+        } 
+        else {
+            throw tokens.at(tokenCount);
+        }
+    } 
+    return parameters;
 };
 
-void Parser::parseParameter() {
+
+Parameter* Parser::parseParameter() {
+
     if (tokens.at(tokenCount)->getTokenType() == STRING || tokens.at(tokenCount)->getTokenType() == ID) {
+
+        PlainParameter* plain = new PlainParameter(tokens.at(tokenCount)->getTokenStr());
         tokenCount++;
-        return;
+        return plain;
+
     }
+
     else if (tokens.at(tokenCount)->getTokenType() == LEFT_PAREN) {
         tokenCount++;
-        parseExpression();
+        return parseExpression();
     }
+
     else {
         throw tokens.at(tokenCount);
     }
 };
 
-void Parser::parseExpression() {
-    parseParameter();
+Expression* Parser::parseExpression() {
+
+    Expression* express = new Expression();
+
+    express->setParaOne(parseParameter());
+    
     parseOperator();
-    parseParameter();
-    if (tokens.at(tokenCount)->getTokenType() == RIGHT_PAREN) {
-        tokenCount++;
-        return;
-    }
-    else {
-        throw tokens.at(tokenCount);
-    }
+
+    tokenCount--;
+    express->setOp(tokens.at(tokenCount)->getTokenStr());
+    tokenCount++;
+
+    express->setParaTwo(parseParameter());
+
+    parseRIGHT_PAREN();
+
+    return express;
 };
 
 void Parser::parseOperator() {
@@ -382,10 +391,174 @@ void Parser::parseOperator() {
     }
 };
 
+
+//Base parsing
+
+void Parser::parseCOMMA() {
+    if (tokens.at(tokenCount)->getTokenType() == COMMA) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+};
+
+void Parser::parsePERIOD() {
+    if (tokens.at(tokenCount)->getTokenType() == PERIOD) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+};
+
+void Parser::parseQ_MARK() {
+    if (tokens.at(tokenCount)->getTokenType() == Q_MARK) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }   
+};
+
+void Parser::parseLEFT_PAREN() {
+    if (tokens.at(tokenCount)->getTokenType() == LEFT_PAREN) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }   
+};
+
+void Parser::parseRIGHT_PAREN() {
+    if (tokens.at(tokenCount)->getTokenType() == RIGHT_PAREN) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }   
+}; 
+
+void Parser::parseCOLON() {
+    if (tokens.at(tokenCount)->getTokenType() == COLON) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+}; 
+
+void Parser::parseCOLON_DASH() {
+    if (tokens.at(tokenCount)->getTokenType() == COLON_DASH) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }   
+};
+
+void Parser::parseMULTIPLY() {
+    if (tokens.at(tokenCount)->getTokenType() == MULTIPLY) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+};
+
+void Parser::parseADD() {
+    if (tokens.at(tokenCount)->getTokenType() == ADD) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+};
+
+void Parser::parseSCHEMES() {
+    if (tokens.at(tokenCount)->getTokenType() == SCHEMES) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+};
+
+void Parser::parseFACTS() {
+    if (tokens.at(tokenCount)->getTokenType() == FACTS) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+};
+
+void Parser::parseRULES() {
+    if (tokens.at(tokenCount)->getTokenType() == RULES) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+}; 
+
+void Parser::parseQUERIES() {
+    if (tokens.at(tokenCount)->getTokenType() == QUERIES) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+}; 
+
+void Parser::parseSTRING() {
+    if (tokens.at(tokenCount)->getTokenType() == STRING) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+};
+
+void Parser::parseEND_OF_FILE() {
+    if (tokens.at(tokenCount)->getTokenType() == END_OF_FILE) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+};
+
+void Parser::parseID() {
+    if (tokens.at(tokenCount)->getTokenType() == ID) {
+        tokenCount++;
+        return;
+    }
+    else {
+        throw tokens.at(tokenCount);
+    }
+}; 
+
 std::string Parser::toString() {
     if (isValid) {
         std::cout << "Success!" << std::endl;
-        return "Success!";
+        std::cout << datalog.toString();
+        return "Success!" + datalog.toString();
     }
     else {
         std::cout << "Failure!" << std::endl;

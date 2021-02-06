@@ -4,55 +4,109 @@
 #include <set>
 #include <sstream>
 #include "Predicate.h"
+#include "Parameter.h"
+#include "PlainParameter.h"
+#include "Expression.h"
 #include "Rule.h"
 
 class DatalogProgram {
 
     private:
-        std::vector<Predicate> schemes;
-        std::vector<Predicate> facts;
-        std::vector<Predicate> queries;
-        std::vector<Rule> rules;
+        std::vector<Predicate*> schemes;
+        std::vector<Predicate*> facts;
+        std::vector<Predicate*> queries;
+        std::vector<Rule*> rules;
         std::set<std::string> domain;
 
     public:
-        DatalogProgram();
-        ~DatalogProgram();
+       DatalogProgram() {
+
+       }
+      //  ~DatalogProgram();
+
+      void addScheme(Predicate* scheme) {
+          schemes.push_back(scheme);
+      }
+
+      void addFact(Predicate* fact) {
+          facts.push_back(fact);
+      }
+
+      void addQuery(Predicate* query) {
+          queries.push_back(query);
+      }
+      
+      void addRule(Rule* rule) {
+          rules.push_back(rule);
+      }
 
         std::string toString() {
             std::stringstream ss;
 
-            ss << "Schemes(" << schemes.size() << "):" << std::endl;
+            int schemeSize = 0;
+            int factSize = 0;
+            int querySize = 0;
+            int ruleSize = 0;
 
-            for (int i = 0; i < schemes.size(); i++) {
-                ss << schemes.at(i).toString() << std::endl;
+            if (!schemes.empty()) {
+                schemeSize = (int)schemes.size();
             }
 
-            ss << "Facts(" << facts.size() << "):" << std::endl;
-
-            for (int i = 0; i < facts.size(); i++) {
-                ss << facts.at(i).toString() << std::endl;
-                domain.insert(facts.at(i).getId());
+            if (!facts.empty()) {
+                factSize = (int)facts.size();
             }
 
-            ss << "Rules(" << rules.size() << "):" << std::endl;
-
-            for (int i = 0; i < rules.size(); i++) {
-                ss << rules.at(i).toString() << std::endl;
+            if (!queries.empty()) {
+                querySize = (int)queries.size();
             }
 
-            ss << "Queries(" << queries.size() << "):" << std::endl;
-
-            for (int i = 0; i < queries.size(); i++) {
-                ss << queries.at(i).toString() << std::endl;
+            if (!rules.empty()) {
+                ruleSize = (int)rules.size();
             }
             
-            ss << "Domain(" << domain.size() << "):" << std::endl;
 
-            for (auto elem : domain) {
-                ss << elem << std::endl;
+            ss << "Schemes(" << schemeSize << "):" << std::endl;
+
+            for (int i = 0; i < schemeSize; i++) {
+                ss << '\t' << schemes.at(i)->toString() << std::endl;
             }
 
+            ss << "Facts(" << factSize << "):" << std::endl;
+
+            for (int i = 0; i < factSize; i++) {
+                ss << '\t' << facts.at(i)->toString() << "." << std::endl;
+
+                for (int j=0; j < (int)facts.at(i)->getParameters().size(); j++) {
+                    domain.insert(facts.at(i)->getParameters().at(j)->toString());
+                }
+                
+            }
+
+            ss << "Rules(" << ruleSize << "):" << std::endl;
+
+            for (int i = 0; i < ruleSize; i++) {
+                ss << '\t' << rules.at(i)->toString() << std::endl;
+            }
+
+            ss << "Queries(" << querySize << "):" << std::endl;
+
+            for (int i = 0; i < querySize; i++) {
+                ss << '\t' << queries.at(i)->toString() << "?" << std::endl;
+            }
+            
+            if (factSize > 0) {
+                ss << "Domain(" << factSize << "):" << std::endl;
+
+                for (auto elem : domain) {
+                    ss << elem << std::endl;
+                }
+            }
+            else {
+                ss << "Domain(" << factSize << "):" << std::endl;
+            }
+            
+
+            return ss.str();
         }
 
 };

@@ -2,6 +2,10 @@
 #include <iostream>
 #include <vector>
 #include "Token.h"
+#include "DatalogProgram.h"
+#include "Parameter.h"
+#include "PlainParameter.h"
+#include "Expression.h"
 
 class Parser {
 
@@ -21,6 +25,7 @@ class Parser {
         bool isValid;
         int tokenCount;
         std::vector<Token*> tokens;
+        DatalogProgram datalog;
 
         void parseDatalogProgram();
 
@@ -34,17 +39,35 @@ class Parser {
         void parseRule();
         void parseQuery();
 
-        void parseHeadPredicate();
+        void parseHeadPredicate(Rule* rule);
+        void parsePredicate(Rule* rule);
         void parsePredicate();
 
-        void parsePredicateList();
-        void parseParameterList();
-        void parseStringList();
-        void parseIdList();
+        void parsePredicateList(Rule* rule);
+        void parseParameterList(Predicate* pred);
+        void parseStringList(Predicate* newFact);
+        std::vector<PlainParameter *> parseIdList();
+        void parseIdList(Predicate* pred);
 
-        void parseParameter();
-        void parseExpression();
+        Parameter* parseParameter();
+        Expression* parseExpression();
         void parseOperator();
 
+        void parseCOMMA();
+        void parsePERIOD();
+        void parseQ_MARK();
+        void parseLEFT_PAREN();
+        void parseRIGHT_PAREN(); 
+        void parseCOLON(); 
+        void parseCOLON_DASH();
+        void parseMULTIPLY();
+        void parseADD();
+        void parseSCHEMES();
+        void parseFACTS();
+        void parseRULES(); 
+        void parseQUERIES(); 
+        void parseSTRING();
+        void parseEND_OF_FILE();
+        void parseID();     
 
 };

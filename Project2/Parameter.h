@@ -6,7 +6,11 @@ class Parameter {
     std::string parameter;
 
     public:
+
     Parameter() {};
 
-    virtual std::string toString();
+    virtual ~Parameter() = default;
+
+    virtual std::string toString() {return " ";};
+
 };

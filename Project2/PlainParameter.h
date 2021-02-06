@@ -3,7 +3,11 @@
 
 class PlainParameter : public Parameter {
 
-    PlainParameter(std::string parameter) { this->parameter = parameter; };
+    public:
+
+    PlainParameter(std::string parameter){
+    this->parameter = parameter;
+};
 
     std::string toString() {
         return parameter;
